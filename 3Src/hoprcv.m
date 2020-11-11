@@ -38,23 +38,28 @@ function ret = hoprcv()
 	fprintf('finished.\n');
 
 	fprintf('receiving...');
+	ct = Datacount = TotalDataCount = uint32(0);
 	while 1
 		output = readRxData(s);
-		rxdata = xxxx;
+		I=output{1};
+		Q=output{2};
+		rxdata=I+1i*Q;
 	   	[crc_res,urmsg]=my_bpsk_rx_func(rxdata);
 		if crc_res == 1 && urmsg(1) = hex2dec('ad') && urmsg(2) == hex2dec('13')
 			switch urmsg(3)
-				case 0
+				case 0 %Hopping SYN
 					;
-				case 1
+				case 1 %Hopping ACK
 					;
-				case 2
+				case 2 %File
 					TotalDataCount = ubytes2word(urmsg(5:8));
-				case 3
+				case 3 %File Secondary
 					if ct == TotalDataCount
 						break;
 					end
+					DataCount = urmsg(4);
 					buffer = [buffer,urmsg(5:DataCount+4)];
+					ct = ct + DataCount;
 			end
 		else
 			;
