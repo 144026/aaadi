@@ -2,7 +2,7 @@
 function ret = hoprcv()
 %% initialize
 	fprintf('initializing...');
-	clearvars -except times;close all;warning off;
+	close all;warning off;
 	set(0,'defaultfigurecolor','w');
 	addpath ..\..\library
 	addpath ..\..\library\matlab
@@ -18,8 +18,8 @@ function ret = hoprcv()
 	s.dev_name = 'ad9361';
 	s.in_ch_no = 2;
 	s.out_ch_no = 2;
-	s.in_ch_size = length(txdata);
-	s.out_ch_size = length(txdata).*8;
+	s.in_ch_size = 42568;
+	s.out_ch_size = 42568.*8;
 	
 	s = s.setupImpl();
 	
@@ -76,6 +76,7 @@ function ret = hoprcv()
 	% release implementation
 	rssi1 = output{s.getOutChannel('RX1_RSSI')};
 	s.releaseImpl();
+	clearvars -except times; 
 end
 
 
@@ -83,13 +84,13 @@ end
 function umsg = packdata(Type,DataCount,Data)
 	Magic = [uint8(hex2dec('ad')), uint8(hex2dec('13'))];
 	Type = uint8(Type);
-	DataCount = uint8(Type);
+	DataCount = uint8(DataCount);
 	Data = [uint8(Data), uint8(zeros(1,56))];
 	Data = Data(1:56);
 	umsg = [Magic,Type,DataCount,Data];
 end
 
-function sendumsg(umsg)
+function sendumsg(s,input,umsg)
 	txdata = my_bpsk_tx_func(umsg);
 	txdata = round(txdata .* 2^14);
 	txdata=repmat(txdata, 8,1);
