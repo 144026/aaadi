@@ -1,8 +1,8 @@
 %% sender routine 0.2.0
 function ret = hopsend(filename)
 %% initialize
-	fprintf('initializing...');
-	clearvars -except times;close all;warning off;
+	fprintf('initializing...\n');
+	close all;warning off;
 	set(0,'defaultfigurecolor','w');
 	addpath ..\..\library
 	addpath ..\..\library\matlab
@@ -18,8 +18,8 @@ function ret = hopsend(filename)
 	s.dev_name = 'ad9361';
 	s.in_ch_no = 2;
 	s.out_ch_no = 2;
-	s.in_ch_size = length(txdata);
-	s.out_ch_size = length(txdata).*8;
+	s.in_ch_size = 42568;
+	s.out_ch_size = 42568.*8;
 	
 	s = s.setupImpl();
 	
@@ -37,15 +37,16 @@ function ret = hopsend(filename)
 	input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
 	fprintf('finished.\n');
 
-	fprintf('transporting...');
+	fprintf('transporting...\n');
 	fid = fopen(filename);
-	filebytes = uint8(fread(fid));
+	filebytes = uint8(fread(fid)).';
+    filebytes
 	fclose(fid);
 
 	% send 'File' request with TotalDataCount
 	TotalDataCount = uint32(length(filebytes));
-	umsg = packdata(2,DataCount,word2ubytes(TotalDataCount));
-	sendumsg(umsg);
+	umsg = packdata(2,uint8(0),word2ubytes(TotalDataCount));
+	sendumsg(s,input,umsg);
 
 	% send 'File Secondary'
 	offset = uint32(1);
@@ -56,15 +57,16 @@ function ret = hopsend(filename)
 		else
 			DataCount=uint32(56);
 		end
-		umsg = packdata(3,DataCount,bytes(offset:offset+DataCount-1));
+		umsg = packdata(3,DataCount,filebytes(offset:offset+DataCount-1));
 		offset = offset+DataCount;
-		sendumsg(umsg);
+		sendumsg(s,input,umsg);
 	end
 	fprintf('finished.\n');
 
 	% release implementation
 	rssi1 = output{s.getOutChannel('RX1_RSSI')};
 	s.releaseImpl();
+    clearvars -except times;
 end
 
 
@@ -72,13 +74,13 @@ end
 function umsg = packdata(Type,DataCount,Data)
 	Magic = [uint8(hex2dec('ad')), uint8(hex2dec('13'))];
 	Type = uint8(Type);
-	DataCount = uint8(Type);
+	DataCount = uint8(DataCount);
 	Data = [uint8(Data), uint8(zeros(1,56))];
 	Data = Data(1:56);
 	umsg = [Magic,Type,DataCount,Data];
 end
 
-function sendumsg(umsg)
+function sendumsg(s,input,umsg)
 	txdata = my_bpsk_tx_func(umsg);
 	txdata = round(txdata .* 2^14);
 	txdata=repmat(txdata, 8,1);
