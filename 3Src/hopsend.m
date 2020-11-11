@@ -45,7 +45,7 @@ function ret = hopsend(filename)
 
 	% send 'File' request with TotalDataCount
 	TotalDataCount = uint32(length(filebytes));
-	umsg = packdata(2,uint8(0),word2ubytes(TotalDataCount));
+	umsg = packdata(2,uint8(4),word2ubytes(TotalDataCount));
 	sendumsg(s,input,umsg);
 
 	% send 'File Secondary'
