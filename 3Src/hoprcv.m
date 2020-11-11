@@ -1,5 +1,5 @@
-%% sender routine 0.2.0
-function ret = hopsend(filename)
+%% sender routine 0.0.3
+function ret = hoprcv()
 %% initialize
 	fprintf('initializing...');
 	clearvars -except times;close all;warning off;
@@ -37,30 +37,36 @@ function ret = hopsend(filename)
 	input{s.getInChannel('TX_RF_BANDWIDTH')} = 20e6;
 	fprintf('finished.\n');
 
-	fprintf('transporting...');
-	fid = fopen(filename);
-	filebytes = uint8(fread(fid));
-	fclose(fid);
-
-	% send 'File' request with TotalDataCount
-	TotalDataCount = uint32(length(filebytes));
-	umsg = packdata(2,DataCount,word2ubytes(TotalDataCount));
-	sendumsg(umsg);
-
-	% send 'File Secondary'
-	offset = uint32(1);
-	while offset <= TotalDataCount
-		%pause(0.1); %wait
-		if offset+56-1>TotalDataCount
-			DataCount=TotalDataCount-offset+1;
+	fprintf('receiving...');
+	while 1
+		output = readRxData(s);
+		rxdata = xxxx;
+	   	[crc_res,urmsg]=my_bpsk_rx_func(rxdata);
+		if crc_res == 1 && urmsg(1) = hex2dec('ad') && urmsg(2) == hex2dec('13')
+			switch urmsg(3)
+				case 0
+					;
+				case 1
+					;
+				case 2
+					TotalDataCount = ubytes2word(urmsg(5:8));
+				case 3
+					if ct == TotalDataCount
+						break;
+					end
+					buffer = [buffer,urmsg(5:DataCount+4)];
+			end
 		else
-			DataCount=uint32(56);
+			;
 		end
-		umsg = packdata(3,DataCount,bytes(offset:offset+DataCount-1));
-		offset = offset+DataCount;
-		sendumsg(umsg);
+
 	end
 	fprintf('finished.\n');
+
+	% write to file
+	fid = fopen('rcv-test.txt');
+	fwrite(fid,buffer);
+	fclose(fid);
 
 	% release implementation
 	rssi1 = output{s.getOutChannel('RX1_RSSI')};
