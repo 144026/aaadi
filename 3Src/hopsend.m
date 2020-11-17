@@ -1,4 +1,4 @@
-%% sender routine 0.2.0
+%% sender routine 0.4.0
 function ret = hopsend(filename)
 %% initialize
 	fprintf('initializing...\n');
@@ -43,11 +43,17 @@ function ret = hopsend(filename)
     filebytes
 	fclose(fid);
 
+    ct=0;
+    
+while 1
+    pause(0.5);
 	% send 'File' request with TotalDataCount
 	TotalDataCount = uint32(length(filebytes));
 	umsg = packdata(2,uint8(4),word2ubytes(TotalDataCount));
 	sendumsg(s,input,umsg);
 
+    ct=ct+1;
+    fprintf('try #%i\n',ct);
 	% send 'File Secondary'
 	offset = uint32(1);
 	while offset <= TotalDataCount
@@ -60,7 +66,8 @@ function ret = hopsend(filename)
 		umsg = packdata(3,DataCount,filebytes(offset:offset+DataCount-1));
 		offset = offset+DataCount;
 		sendumsg(s,input,umsg);
-	end
+    end
+end
 	fprintf('finished.\n');
 
 	% release implementation

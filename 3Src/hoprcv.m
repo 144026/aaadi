@@ -1,4 +1,4 @@
-%% sender routine 0.0.3
+%% receiver routine 0.4.0
 function ret = hoprcv()
 %% initialize
 	fprintf('initializing...');
@@ -39,10 +39,13 @@ function ret = hoprcv()
 
 	fprintf('receiving...');
 	ct = uint32(0);
-	Datacount = uint32(0);
+	DataCount = uint32(0);
 	TotalDataCount = uint32(0);
 	bf = uint8([97,97,97,10]);
+    aaa=0
 	while 1
+        aaa=aaa+1;
+        aaa
 		output = readRxData(s);
 		I=output{1};
 		Q=output{2};
@@ -57,10 +60,14 @@ function ret = hoprcv()
 				case 2 %File
 					TotalDataCount = ubytes2word(urmsg(5:8));
 				case 3 %File Secondary
+                    if TotalDataCount == 0
+                        continue;
+                    end
+                    
 					if ct == TotalDataCount
 						break;
 					end
-					DataCount = urmsg(4);
+					DataCount = uint32(urmsg(4));
 					bf = [bf,urmsg(5:DataCount+4)];
 					ct = ct + DataCount;
 			end
@@ -72,7 +79,7 @@ function ret = hoprcv()
 	fprintf('finished.\n');
 
 	% write to file
-	fid = fopen('rcv-test.txt');
+	fid = fopen('rcv-test.txt','wb');
 	fwrite(fid,bf);
 	fclose(fid);
 
