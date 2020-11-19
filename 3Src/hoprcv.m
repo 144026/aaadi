@@ -43,6 +43,7 @@ function ret = hoprcv()
 	TotalDataCount = uint32(0);
 	bf = uint8([97,97,97,10]);
     aaa=0
+
 	while 1
         aaa=aaa+1;
         aaa
@@ -91,6 +92,35 @@ end
 
 
 %% utility functions
+function Dispatcher(umsg)
+	%% Type definition
+	HOPPING_SYN = uint8(0);
+	HOPPING_ACK = uint8(1);
+	FILE = uint8(2);
+	FILE_SECONDARY = uint8(3);
+
+	%% dispatch
+	switch umsg(3)
+		case HOPPING_SYN 
+			CompleteHoppingSYN(umsg);
+		case HOPPING_ACK 
+			;
+		case FILE
+			CompleteFile(umsg);
+		case FILE_SECONDARY
+			CompleteFIleSecondary(umsg);
+	end
+end
+
+function CompleteFile(umsg)
+	main.TotalDataCount = ubytes2word(urmsg(5:8));
+	sendACK
+end
+
+function CompleteFileSecondary(umsg)
+
+
+
 function umsg = packdata(Type,DataCount,Data)
 	Magic = [uint8(hex2dec('ad')), uint8(hex2dec('13'))];
 	Type = uint8(Type);
