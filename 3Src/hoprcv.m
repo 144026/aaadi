@@ -39,9 +39,9 @@ function ret = hoprcv()
 
 	fprintf('receiving...');
 	ct = uint32(0);
-	DataCount = uint32(0);
-	TotalDataCount = uint32(0);
-	bf = uint8([97,97,97,10]);
+	global DataCount = uint32(0);
+	global TotalDataCount = uint32(0);
+	global bf = uint8([97,97,97,10]);
     aaa=0
 
 	while 1
@@ -110,7 +110,8 @@ function play()
 			seq = seq + 1;
 			rcvDispatcher(rUmsg);
 		else
-			sUmsg=PackUmsg(rUmsg(3),rUmsg(4),seq,rUmsg(9:60));
+			;
+% 			sUmsg=PackUmsg(rUmsg(3),rUmsg(4),seq,rUmsg(9:60));
 		end
 	end
 end
@@ -125,7 +126,8 @@ function rcvDispatcher(umsg)
 	%% dispatch
 	switch umsg(3)
 		case HOPPING_SYN 
-			CompleteHoppingSYN(umsg);
+			;
+% 			CompleteHoppingSYN(umsg);
 		case HOPPING_ACK 
 			;
 		case FILE
@@ -136,11 +138,12 @@ function rcvDispatcher(umsg)
 end
 
 function CompleteFile(umsg)
-	main.TotalDataCount = ubytes2word(rUmsg(5:8));
-	sendACK
+% 	main.TotalDataCount = ubytes2word(rUmsg(5:8));
+% 	sendACK
 end
 
 function CompleteFileSecondary(umsg)
+end
 
 
 function umsg = PackUmsg(Type,DataCount,Seq,Data)
