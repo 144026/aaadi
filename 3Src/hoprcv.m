@@ -13,7 +13,7 @@ function ret = hoprcv()
 	
 	% Transmit and Receive using MATLAB libiio
 	% System Object Configuration
-	global s = iio_sys_obj_matlab; % MATLAB libiio Constructor
+	s = iio_sys_obj_matlab; % MATLAB libiio Constructor
 	s.ip_address = ip;
 	s.dev_name = 'ad9361';
 	s.in_ch_no = 2;
@@ -23,8 +23,8 @@ function ret = hoprcv()
 	
 	s = s.setupImpl();
 	
-	global input = cell(1, s.in_ch_no + length(s.iio_dev_cfg.cfg_ch));
-	global output = cell(1, s.out_ch_no + length(s.iio_dev_cfg.mon_ch));
+	input = cell(1, s.in_ch_no + length(s.iio_dev_cfg.cfg_ch));
+	output = cell(1, s.out_ch_no + length(s.iio_dev_cfg.mon_ch));
 	
 	% Set the attributes of AD9361
 	input{s.getInChannel('RX_LO_FREQ')} = 2e9;
@@ -39,20 +39,22 @@ function ret = hoprcv()
 
 	fprintf('receiving...');
 	ct = uint32(0);
-	global DataCount = uint32(0);
-	global TotalDataCount = uint32(0);
-	global bf = uint8([97,97,97,10]);
+	DataCount = uint32(0);
+	TotalDataCount = uint32(0);
+	bf = uint8([97,97,97,10]);
     aaa=0
 
 	while 1
         aaa=aaa+1;
-        aaa
+        aaa;
 		output = readRxData(s);
 		I=output{1};
 		Q=output{2};
 		rxdata=I+1i*Q;
 	   	[crc_res,rUmsg]=my_bpsk_rx_func(rxdata);
 		if crc_res == 1 && rUmsg(1) == hex2dec('ad') && rUmsg(2) == hex2dec('13')
+            [ct,TotalDataCount]
+            [crc_res,rUmsg]
 			switch rUmsg(3)
 				case 0 %Hopping SYN
 					;

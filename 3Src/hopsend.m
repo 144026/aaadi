@@ -13,7 +13,7 @@ function ret = hopsend(filename)
 	
 	% Transmit and Receive using MATLAB libiio
 	% System Object Configuration
-	global s = iio_sys_obj_matlab; % MATLAB libiio Constructor
+	s = iio_sys_obj_matlab; % MATLAB libiio Constructor
 	s.ip_address = ip;
 	s.dev_name = 'ad9361';
 	s.in_ch_no = 2;
@@ -23,8 +23,8 @@ function ret = hopsend(filename)
 	
 	s = s.setupImpl();
 	
-	global input = cell(1, s.in_ch_no + length(s.iio_dev_cfg.cfg_ch));
-	global output = cell(1, s.out_ch_no + length(s.iio_dev_cfg.mon_ch));
+	input = cell(1, s.in_ch_no + length(s.iio_dev_cfg.cfg_ch));
+	output = cell(1, s.out_ch_no + length(s.iio_dev_cfg.mon_ch));
 	
 	% Set the attributes of AD9361
 	input{s.getInChannel('RX_LO_FREQ')} = 2e9;
@@ -78,14 +78,13 @@ end
 
 
 %% utility functions
-function umsg = packdata(Type,DataCount,Seq,Data)
+function umsg = packdata(Type,DataCount,Data)
 	Magic = [uint8(hex2dec('ad')), uint8(hex2dec('13'))];
 	Type = uint8(Type);
 	DataCount = uint8(DataCount);
-	Seq=word2ubytes(uint32(seq));
-	Data = [uint8(Data), uint8(zeros(1,52))];
-	Data = Data(1:52);
-	umsg = [Magic,Type,DataCount,Seq,Data];
+	Data = [uint8(Data), uint8(zeros(1,56))];
+	Data = Data(1:56);
+	umsg = [Magic,Type,DataCount,Data];
 end
 
 function umsg = PackUmsg(Type,DataCount,Data)
